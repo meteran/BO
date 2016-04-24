@@ -1,19 +1,17 @@
 __author__ = 'lis'
 
+
 class BeesAlgorithm:
-    '''
+    """
     Class implementing bees algorithm for our problem.
     Solutions are represented by table of tuples with x,y indices in cost_array.
-    '''
+    """
 
-    ITERATIONS = 5000
-    BEES_AMOUNT = 50
-    ELITE_PATCHES = 1
-    BEST_PATCHES = 4
-
-
-
-    def __init__(self, data):
+    def __init__(self, data, iterations=5000, bees_amount=50, elite_patches=1, best_patches=4):
+        self.bees_amount = bees_amount
+        self.elite_patches = elite_patches
+        self.best_patches = best_patches
+        self.iterations = iterations
         self.data = data
 
     def get_next_solution(self, solution):  # TODO
@@ -63,7 +61,6 @@ class BeesAlgorithm:
         solutions = self.sort_solutions(self.initialize_population())
 
         for i in range(0, self.ITERATIONS):
-
             pass
 
         return "dupa"
