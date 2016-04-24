@@ -1,12 +1,12 @@
 class DataLoader:
-    '''
+    """
     Class used to load demand, supply and cost information from file. Example file contents:
     1, 2, 3, 4, 5
     2, 3, 4
     1, 2, 3, 4, 5
     1, 2, 3, 4, 5
     1, 2, 3, 4 ,5
-    '''
+    """
 
     @staticmethod
     def load_data_from_file(file_name):
