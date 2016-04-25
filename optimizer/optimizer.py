@@ -58,6 +58,6 @@ class BeesAlgorithm:
         solutions = self.sort_solutions(self.initialize_population())
 
         for i in range(self.iterations):
-            yield i * 100 / self.iterations  # ta linijka ma tu zostac, sluzy do sterowania analiza
-            # wynik algorytmu powinien byc zapisany do self.solution
+            yield i * 100 / self.iterations  # this line is to control the algorithm
+            # result of algorithm should be saved into self.solution variable
             # TODO
