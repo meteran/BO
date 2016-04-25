@@ -13,7 +13,7 @@ def load_data_from_file(file_name):
     loaded_lines = text_file.readlines()
     demand_list = list(map(int, loaded_lines[0].split(',')))
     supply_list = list(map(int, loaded_lines[1].split(',')))
-    cost_array = [[0 for x in range(len(demand_list))] for x in range(len(supply_list))]
+    cost_array = [[0]*len(demand_list) for x in range(len(supply_list))]
     for i in range(len(supply_list)):
         values = list(map(int, loaded_lines[2 + i].split(',')))
         for j in range(len(demand_list)):

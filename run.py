@@ -122,7 +122,15 @@ class App(QtGui.QMainWindow, Ui_MainWindow):
         self.labels = []
         self.parameters = {}
         for index, param in enumerate(self.config.options("INT_PARAMETERS")):
-            self.add_parameter(index, param)
+            try:
+                value = int(self.config.get("INT_PARAMETERS", param))
+                self.add_parameter(index, param, value, QtGui.QSpinBox, 1, 100000)
+            except:
+                try:
+                    value = float(self.config.get("INT_PARAMETERS", param))
+                    self.add_parameter(index, param, value, QtGui.QDoubleSpinBox, 0, 1)
+                except:
+                    pass
 
     def read_config(self, args):
         for arg in args:
@@ -134,20 +142,20 @@ class App(QtGui.QMainWindow, Ui_MainWindow):
         except:
             self.config.read("config.ini")
 
-    def add_parameter(self, index, param):
+    def add_parameter(self, index, name, value, qclass, min, max):
         label = QtGui.QLabel(self.parameters_box)
-        label.setObjectName("label_" + param)
-        label.setText(param.replace("_", " ") + ":")
+        label.setObjectName("label_" + name)
+        label.setText(name.replace("_", " ") + ":")
         self.parameter_layout.setWidget(index, QtGui.QFormLayout.LabelRole, label)
         self.labels.append(label)
-        spin_box = QtGui.QSpinBox(self.parameters_box)
+        spin_box = qclass(self.parameters_box)
         spin_box.setMaximumSize(QtCore.QSize(100, 16777215))
-        spin_box.setObjectName("spin_box_" + param)
-        spin_box.setMaximum(100000)
-        spin_box.setMinimum(1)
-        spin_box.setValue(int(self.config.get("INT_PARAMETERS", param)))
+        spin_box.setObjectName("spin_box_" + name)
+        spin_box.setMaximum(max)
+        spin_box.setMinimum(min)
+        spin_box.setValue(value)
         self.parameter_layout.setWidget(index, QtGui.QFormLayout.FieldRole, spin_box)
-        self.parameters[param] = spin_box
+        self.parameters[name] = spin_box
 
     def closeEvent(self, *args, **kwargs):
         if self.runner:
