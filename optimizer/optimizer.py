@@ -8,7 +8,7 @@ class BeesAlgorithm:
     """
 
     def __init__(self, data, iterations=5000, scout_bees=50, search_patches=5, elite_patches=1, elite_patch_bees=5,
-                 search_patch_bees=3, initial_patch_size=5):
+                 search_patch_bees=3, initial_patch_size=5, patch_size_multiplier=0.95):
         self.data = data
         self.iterations = iterations
         self.scout_bees = scout_bees
@@ -17,23 +17,29 @@ class BeesAlgorithm:
         self.elite_patch_bees = elite_patch_bees
         self.search_patch_bees = search_patch_bees
         self.initial_patch_size = initial_patch_size
+        self.patch_size_multiplier = patch_size_multiplier
         self.random_scout_bees = elite_patches*elite_patch_bees + (search_patches-elite_patches)*search_patch_bees
+        self.demand_list_length = len(self.data.demand_list)
+        self.supply_list_length = len(self.data.supply_list)
 
     # -------------------------------------------------------------
 
     def evaluate_fitness(self, scout_bee):
         '''
-        :param scout_bee: represents a single solution
+        :param scout_bee: table representing a single solution
         :return: objective function value for given scout_bee
         '''
-        # TODO
-        return scout_bee
+        scout_bee_fitness = 0
+        for i in range(self.demand_list_length):
+            for j in range(self.supply_list_length):
+                scout_bee_fitness = scout_bee_fitness + self.data.cost_array[i][j] * scout_bee[i][j]
+        return scout_bee_fitness
 
     def get_random_scout_bee(self):
         '''
         :return: returns random (scout_bee, scout_bee_fitness)
         '''
-        scout_bee = 1
+        scout_bee = [[0 for x in range(self.demand_list_length)] for x in range(self.supply_list_length)]
         # TODO
         return scout_bee, self.evaluate_fitness(scout_bee)
 
@@ -75,9 +81,10 @@ class BeesAlgorithm:
 
         # STEP 2 - evaluate fitness of the population
         scout_bees = self.order_by_fitnesses(scout_bees)
+        patch_size = self.initial_patch_size
 
         # STEP 3 - go until stop criterion is met
-        for i in range(0, self.iterations):
+        for i in range(self.iterations):
 
             # STEP 4 - select elite and search patches
             scout_bees = scout_bees[:self.search_patches]
@@ -85,12 +92,12 @@ class BeesAlgorithm:
             search_patches = scout_bees[self.search_patches:self.elite_patches]
 
             # STEP 5 - determine patch size
-            # TODO
+            patch_size *= self.patch_size_multiplier
 
             # STEP 6 - recruit bees for selected sites and evaluate fitnesses for elite patches
             for elite_patch in elite_patches:
                 elite_site = []
-                for elite_patch_bee in range(0, self.elite_patch_bees):
+                for elite_patch_bee in range(self.elite_patch_bees):
                     elite_site[elite_patch_bee] = self.get_neighed_scout_bee(elite_patch)
 
                 # STEP 7 - select fittest bee from each site and abandon sites without new information
@@ -100,7 +107,7 @@ class BeesAlgorithm:
             # STEP 6 - recruit bees for selected sites and evaluate fitnesses for remaining patches
             for search_patch in search_patches:
                 search_site = []
-                for search_patch_bee in range(0, self.search_patch_bees):
+                for search_patch_bee in range(self.search_patch_bees):
                     search_site[search_patch_bee] = self.get_neighed_scout_bee(search_patch)
 
                 # STEP 7 - select fittest bee from each site and abandon sites without new information
@@ -108,7 +115,7 @@ class BeesAlgorithm:
                     scout_bees.extend(search_site)
 
             # STEP 9 - assign remaining bees to search randomly and evaluate their fitnesses
-            for scout_bee in range(0, self.random_scout_bees):
+            for scout_bee in range(self.random_scout_bees):
                 scout_bees.append(self.get_random_scout_bee())
 
             # STEP 10 - enter another iteration with ordered scout bees
