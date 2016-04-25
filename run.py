@@ -1,6 +1,7 @@
 #!/usr/bin/python
 # coding: utf-8
 import sys
+import traceback
 from ConfigParser import ConfigParser
 
 from PyQt4 import QtGui, QtCore
@@ -8,9 +9,9 @@ from PyQt4 import QtGui, QtCore
 from optimizer.optimizer import BeesAlgorithm
 from ui.MainWindow import Ui_MainWindow
 
-
 # noinspection PyCallByClass
 from utils.data_loader import load_data_from_file
+from utils.threads import Thread
 
 
 class App(QtGui.QMainWindow, Ui_MainWindow):
@@ -31,6 +32,8 @@ class App(QtGui.QMainWindow, Ui_MainWindow):
         self.input_file_edit.setText(self.config.get("FILES", "input"))
         self.output_file_edit.setText(self.config.get("FILES", "output"))
 
+        self.runner = None
+
     def connect_signals(self):
         self.find_input.pressed.connect(
             lambda: self.input_file_edit.setText(QtGui.QFileDialog.getOpenFileName(self, "Input File")))
@@ -40,6 +43,7 @@ class App(QtGui.QMainWindow, Ui_MainWindow):
         self.output_file_edit.textChanged.connect(self.files_edited)
         self.start_computing_button.pressed.connect(self.start_computing)
         self.cancel_computing_button.pressed.connect(self.cancel_computing)
+        self.pause_computing_button.pressed.connect(self.pause_computing)
 
     def sleep_progressbar(self, progress):
         if self.go and progress <= 100:
@@ -49,7 +53,7 @@ class App(QtGui.QMainWindow, Ui_MainWindow):
             self.progress_bar.setValue(0)
 
     def create_problem(self):
-        params = {k: v.getValue() for (k, v) in self.parameters.items()}
+        params = {k: v.value() for (k, v) in self.parameters.items()}
         data = load_data_from_file(self.input_file)
         self.algorithm = BeesAlgorithm(data, **params)
         self.problem = self.algorithm.get_problem()
@@ -62,7 +66,7 @@ class App(QtGui.QMainWindow, Ui_MainWindow):
                 self.parameters_box.setEnabled(False)
                 self.files_box.setEnabled(False)
             except:
-                return
+                traceback.print_exc()
 
         self.start_computing_button.setEnabled(False)
         self.cancel_computing_button.setEnabled(True)
@@ -70,38 +74,42 @@ class App(QtGui.QMainWindow, Ui_MainWindow):
 
         self.canceled = False
         self.paused = False
-        self.algorithm_runner()
-        self.start_computing_button.setEnabled(True)
-        self.pause_computing_button.setEnabled(False)
 
-        if not (self.canceled or self.paused):
-            self.save_solution()
+        self.runner = Thread(self.problem)
+        self.runner.computing_finished.connect(self.algorithm_finished)
+        self.runner.change_progress.connect(self.progress_bar.setValue)
+        self.runner.start()
+        print "start"
 
     def save_solution(self):
         pass
 
-    def algorithm_runner(self):
-        for progress in self.problem:
-            self.progress_bar.setValue(progress + 1)
-            if self.canceled:
-                break
-            if self.paused:
-                return
+    def algorithm_finished(self):
+        if not (self.canceled or self.paused):
+            self.save_solution()
         self.clear_problem()
 
     def clear_problem(self):
         self.progress_bar.setValue(0)
         self.problem = None
         self.algorithm = None
+        self.runner = None
         self.files_box.setEnabled(True)
         self.parameters_box.setEnabled(True)
+        self.start_computing_button.setEnabled(True)
+        self.pause_computing_button.setEnabled(False)
+        self.cancel_computing_button.setEnabled(False)
 
     def pause_computing(self):
+        self.pause_computing_button.setEnabled(False)
+        self.start_computing_button.setEnabled(True)
+        self.runner.pause()
         self.paused = True
 
     def cancel_computing(self):
-        self.canceled = True
         self.cancel_computing_button.setEnabled(False)
+        self.runner.cancel()
+        self.canceled = True
         if self.paused:
             self.clear_problem()
 
@@ -140,6 +148,12 @@ class App(QtGui.QMainWindow, Ui_MainWindow):
         spin_box.setValue(int(self.config.get("INT_PARAMETERS", param)))
         self.parameter_layout.setWidget(index, QtGui.QFormLayout.FieldRole, spin_box)
         self.parameters[param] = spin_box
+
+    def closeEvent(self, *args, **kwargs):
+        if self.runner:
+            self.runner.cancel()
+            self.runner.wait(1000)
+        QtGui.QMainWindow.closeEvent(self, *args, **kwargs)
 
 
 if __name__ == "__main__":

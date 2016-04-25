@@ -55,9 +55,10 @@ class BeesAlgorithm:
         """
 
         # get random solutions for start
-        solutions = self.sort_solutions(self.initialize_population())
+        # solutions = self.sort_solutions(self.initialize_population())
 
-        for i in range(self.iterations):
-            yield i * 100 / self.iterations  # this line is to control the algorithm
+        it = self.iterations*100
+        for i in range(it):
+            yield i * 100 / it  # this line is to control the algorithm
             # result of algorithm should be saved into self.solution variable
             # TODO

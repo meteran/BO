@@ -126,7 +126,7 @@ class Ui_MainWindow(object):
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
     def retranslateUi(self, MainWindow):
-        MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow", None))
+        MainWindow.setWindowTitle(_translate("MainWindow", "BO", None))
         self.files_box.setTitle(_translate("MainWindow", "Files", None))
         self.label.setText(_translate("MainWindow", "input file:", None))
         self.find_input.setText(_translate("MainWindow", "...", None))
