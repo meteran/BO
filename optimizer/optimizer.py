@@ -67,7 +67,7 @@ class BeesAlgorithm:
 
     def bees_algorithm(self):
         '''
-        :return: burza za oknem
+        :return: burza za oknem, za drzwiami grad
         '''
 
         # STEP 1 - place scout_bees in random solutions
@@ -91,7 +91,7 @@ class BeesAlgorithm:
             for elite_patch in elite_patches:
                 elite_site = []
                 for elite_patch_bee in range(0, self.elite_patch_bees):
-                    elite_site[elite_patch_bee] = self.get_neighed_solution(elite_patch)
+                    elite_site[elite_patch_bee] = self.get_neighed_scout_bee(elite_patch)
 
                 # STEP 7 - select fittest bee from each site and abandon sites without new information
                 if self.order_by_fitnesses(elite_site)[0][1] < elite_patch[1]:
@@ -101,7 +101,7 @@ class BeesAlgorithm:
             for search_patch in search_patches:
                 search_site = []
                 for search_patch_bee in range(0, self.search_patch_bees):
-                    search_site[search_patch_bee] = self.get_neighed_solution(search_patch)
+                    search_site[search_patch_bee] = self.get_neighed_scout_bee(search_patch)
 
                 # STEP 7 - select fittest bee from each site and abandon sites without new information
                 if self.order_by_fitnesses(search_site)[0][1] < search_patch[1]:
@@ -109,7 +109,7 @@ class BeesAlgorithm:
 
             # STEP 9 - assign remaining bees to search randomly and evaluate their fitnesses
             for scout_bee in range(0, self.random_scout_bees):
-                scout_bees.append(self.get_random_solution())
+                scout_bees.append(self.get_random_scout_bee())
 
             # STEP 10 - enter another iteration with ordered scout bees
             scout_bees = self.order_by_fitnesses(self.scout_bees)
