@@ -25,7 +25,7 @@
   <widget class="QWidget" name="centralwidget">
    <layout class="QGridLayout" name="gridLayout_2">
     <item row="2" column="0">
-     <widget class="QGroupBox" name="groupBox_2">
+     <widget class="QGroupBox" name="files_box">
       <property name="maximumSize">
        <size>
         <width>16777215</width>
@@ -176,7 +176,10 @@
            <string>start</string>
           </property>
          </widget>
-         <widget class="QPushButton" name="stop_computing_button">
+         <widget class="QPushButton" name="pause_computing_button">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
           <property name="maximumSize">
            <size>
             <width>100</width>
@@ -189,7 +192,26 @@
            </font>
           </property>
           <property name="text">
-           <string>stop</string>
+           <string>pause</string>
+          </property>
+         </widget>
+         <widget class="QPushButton" name="cancel_computing_button">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
+          <property name="maximumSize">
+           <size>
+            <width>100</width>
+            <height>25</height>
+           </size>
+          </property>
+          <property name="font">
+           <font>
+            <pointsize>11</pointsize>
+           </font>
+          </property>
+          <property name="text">
+           <string>cancel</string>
           </property>
          </widget>
         </widget>

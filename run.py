@@ -5,10 +5,14 @@ from ConfigParser import ConfigParser
 
 from PyQt4 import QtGui, QtCore
 
+from optimizer.optimizer import BeesAlgorithm
 from ui.MainWindow import Ui_MainWindow
 
 
 # noinspection PyCallByClass
+from utils.data_loader import load_data_from_file
+
+
 class App(QtGui.QMainWindow, Ui_MainWindow):
     def __init__(self, args):
         super(App, self).__init__()
@@ -21,6 +25,12 @@ class App(QtGui.QMainWindow, Ui_MainWindow):
         self.setup_parameters()
         self.connect_signals()
 
+        self.problem = None
+        self.algorithm = None
+
+        self.input_file_edit.setText(self.config.get("FILES", "input"))
+        self.output_file_edit.setText(self.config.get("FILES", "output"))
+
     def connect_signals(self):
         self.find_input.pressed.connect(
             lambda: self.input_file_edit.setText(QtGui.QFileDialog.getOpenFileName(self, "Input File")))
@@ -29,21 +39,71 @@ class App(QtGui.QMainWindow, Ui_MainWindow):
         self.input_file_edit.textChanged.connect(self.files_edited)
         self.output_file_edit.textChanged.connect(self.files_edited)
         self.start_computing_button.pressed.connect(self.start_computing)
-        self.stop_computing_button.pressed.connect(self.stop_computing)
+        self.cancel_computing_button.pressed.connect(self.cancel_computing)
 
     def sleep_progressbar(self, progress):
         if self.go and progress <= 100:
             self.progress_bar.setValue(progress)
-            QtCore.QTimer.singleShot(100, lambda: self.sleep_progressbar(progress+1))
+            QtCore.QTimer.singleShot(100, lambda: self.sleep_progressbar(progress + 1))
         else:
             self.progress_bar.setValue(0)
 
-    def start_computing(self):
-        self.go = True
-        self.sleep_progressbar(1)
+    def create_problem(self):
+        params = {k: v.getValue() for (k, v) in self.parameters.items()}
+        data = load_data_from_file(self.input_file)
+        self.algorithm = BeesAlgorithm(data, **params)
+        self.problem = self.algorithm.get_problem()
 
-    def stop_computing(self):
-        self.go = False
+    def start_computing(self):
+        if not self.problem:
+            try:
+                self.create_problem()
+                open(self.output_file, 'w').close()
+                self.parameters_box.setEnabled(False)
+                self.files_box.setEnabled(False)
+            except:
+                return
+
+        self.start_computing_button.setEnabled(False)
+        self.cancel_computing_button.setEnabled(True)
+        self.pause_computing_button.setEnabled(True)
+
+        self.canceled = False
+        self.paused = False
+        self.algorithm_runner()
+        self.start_computing_button.setEnabled(True)
+        self.pause_computing_button.setEnabled(False)
+
+        if not (self.canceled or self.paused):
+            self.save_solution()
+
+    def save_solution(self):
+        pass
+
+    def algorithm_runner(self):
+        for progress in self.problem:
+            self.progress_bar.setValue(progress + 1)
+            if self.canceled:
+                break
+            if self.paused:
+                return
+        self.clear_problem()
+
+    def clear_problem(self):
+        self.progress_bar.setValue(0)
+        self.problem = None
+        self.algorithm = None
+        self.files_box.setEnabled(True)
+        self.parameters_box.setEnabled(True)
+
+    def pause_computing(self):
+        self.paused = True
+
+    def cancel_computing(self):
+        self.canceled = True
+        self.cancel_computing_button.setEnabled(False)
+        if self.paused:
+            self.clear_problem()
 
     def files_edited(self):
         self.input_file = str(self.input_file_edit.text())

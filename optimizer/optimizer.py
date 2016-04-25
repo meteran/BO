@@ -13,54 +13,51 @@ class BeesAlgorithm:
         self.best_patches = best_patches
         self.iterations = iterations
         self.data = data
+        self.solution = None
 
     def get_next_solution(self, solution):  # TODO
-        '''
+        """
         :param solution: None or solution
         :return: neighed solution if solution, random solution otherwise
-        '''
+        """
         if solution:
             return 1
-        else:
-            return None
 
     def initialize_population(self):
-        '''
+        """
         :return: initial solutions table
-        '''
+        """
         solutions = []
-        for bee in range(0, self.BEES_AMOUNT):
+        for bee in range(0, self.bees_amount):
             solution = self.get_next_solution(solution=None)
             solutions[bee] = (solution, self.calculate_objective_function(solution))
         return solutions
 
     def calculate_objective_function(self, solution):  # TODO
-        '''
+        """
         :param solution: compulsory
         :return: objective function value for given solution
-        '''
+        """
         if solution:
             return 1
 
     def sort_solutions(self, solutions):
-        '''
+        """
         :param solutions: current table of solutions
         :return: sorted solutions if solutions, else None
-        '''
+        """
         if solutions:
             return sorted(solutions, key=lambda solution: solution[1])
-        else:
-            return None
 
-    def bees_algorithm(self):
-        '''
-        :return: burza za oknem
-        '''
+    def get_problem(self):
+        """
+        :return: result
+        """
 
         # get random solutions for start
         solutions = self.sort_solutions(self.initialize_population())
 
-        for i in range(0, self.ITERATIONS):
-            pass
-
-        return "dupa"
+        for i in range(self.iterations):
+            yield i * 100 / self.iterations  # ta linijka ma tu zostac, sluzy do sterowania analiza
+            # wynik algorytmu powinien byc zapisany do self.solution
+            # TODO
